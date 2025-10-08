@@ -1,0 +1,101 @@
+---
+title: "<h3>Introduction to Data Science: Stat-lab 10</h3>"
+output: html_document
+---
+<font color="red"><h4>INSTRUCTIONS:</h4></font>
+<ul>
+<li> Type each one of the R commands in this unit on the space provided below.
+<li> You can embed an R code chunk like this:
+```{r}
+summary(cars)
+```
+<li> After you are done click the **Knit PDF** or **Knit HTML** button. A document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+<li> Go to File --> Save. Name your file.
+<li> Upload the file to the Moodle site by using the link provided.
+</ul>
+<br>
+
+<h5>R commands:</h5>
+```{r}
+library(rtweet)
+bearer.token = "AAAAAAAAAAAAAAAAAAAAAMfblgEAAAAAd5HjuepWWBvQwz2OgghFU4hhpUs%3DrxcwsHs5ym8GwnRg7dzaLVj6KqSUtGTj3jbk9eRtG9j8S36idE"
+auth=rtweet_app(bearer.token)
+auth_save(auth,"Twitter Authentication 2023")
+
+library(rtweet)
+auth_as("Twitter Authentication 2023")
+
+if(file.exists("tweetList.rdata")){
+  load("tweetList.rdata")
+} else{
+  tweetList <- search_tweets("#climate", n=500)
+  save(tweetList, file="tweetList.rdata")
+}
+tweetDF=tweetList
+
+EnsurePackage <- function(x){
+  x <- as.character(x)
+  if (!require(x,character.only=TRUE)){
+    install.pachages(pkgs=x,
+                     repos="http://cran.r-project.org")
+    require(x,character.only = TRUE)
+  }
+}
+
+EnsurePackage("rtweet")
+
+auth_as("Twitter Authentication 2023")
+
+mode(tweetList)
+
+TweetFrame=function(tag,n=100,fn=paste0(tag,".rdata")){
+  require(rtweet)
+  require(fs)
+  fn=path_sanitize(fn)
+  auth_as("Twitter Authentication 2023")
+  
+  if(file.exists(fn)){
+    load(fn)
+  } else {
+    tweetList <- search_tweets(tag, n=n)
+    save(tweetList, file=fn)
+  }
+  return(tweetList)
+  
+}
+
+lgData <- TweetFrame("#ladygaga", 250)
+
+attach(tweetDF)
+head(created_at, 4)
+
+hist(created_at, breaks = 15, freq = TRUE)
+
+q = quantile(created_at,0.8)
+detach(tweetDF)
+tweetDF=tweetDF[tweetDF$created_at<=q,]
+attach(tweetDF)
+hist(created_at, breaks = 15, freq = TRUE)
+
+sortweetsDF<-tweetDF[order(as.integer(created_at)),]
+
+detach(tweetDF)
+attach(sortweetsDF)
+
+diff(created_at)
+
+hist(as.integer(diff(created_at)))
+
+mean(as.integer(diff(created_at)))
+
+library("modeest")
+mfv(as.integer(diff(created_at)))
+
+median(as.integer(diff(created_at)))
+
+sum((as.integer(diff(created_at)))<=20)
+
+sum((as.integer(diff(created_at)))<=10)
+
+sum((as.integer(diff(created_at)))<=5)
+```
